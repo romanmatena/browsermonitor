@@ -33,13 +33,8 @@ git add package.json
 git commit -m "v$NEW_VERSION"
 git push origin master
 
-# Push clean orphan to GitHub
-git checkout --orphan _clean-main
-git add -A
-git commit -m "Initial commit"
-git push github _clean-main:main --force
-git checkout master
-git branch -D _clean-main
+# Push to GitHub
+git push github master:main --force
 
 # Publish to npm
 npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
