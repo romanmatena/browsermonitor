@@ -4,6 +4,7 @@
 
 # Puppeteer Monitor
 
+[![CI](https://github.com/romanmatena/puppeteer-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/romanmatena/puppeteer-monitor/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/puppeteer-monitor.svg)](https://www.npmjs.com/package/puppeteer-monitor)
 [![npm downloads](https://img.shields.io/npm/dm/puppeteer-monitor.svg)](https://www.npmjs.com/package/puppeteer-monitor)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
