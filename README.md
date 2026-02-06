@@ -31,13 +31,14 @@ Browser console, network, DOM, and screenshot monitoring for debugging and LLM w
 ### Features
 
 - **Console, network, DOM, cookies, screenshot** – capture full browser state in one dump
+- **Screenshot** – each dump writes `puppeteer-screenshot.png` (current tab viewport); ideal for LLM vision or quick visual checks
 - **HTTP REST API** – trigger dump, status, clear, tab switch via `curl` (ideal for LLM agents)
 - **Multiple modes** – Interactive (menu), Open (launch Chrome), Join (attach to existing)
 - **WSL + Windows** – Chrome on Windows, app in WSL with automatic port proxy
 - **Native Linux** – run with GUI on Ubuntu or headless
 - **Lazy or realtime** – buffer in memory or write logs immediately
 
-## Screenshots
+## Screenshots (demo)
 
 | Interactive mode | Open mode / Dump output |
 |------------------|--------------------------|
@@ -195,6 +196,10 @@ Use `curl` to communicate with the HTTP API over REST. Default URL: `http://loca
 | `GET /clear` | Clear in-memory buffers |
 | `GET /tabs` | List all user tabs (index, url) |
 | `GET /tab?index=N` | Switch monitored tab (1-based index) |
+| `GET /computed-styles?selector=...` | Get computed CSS for first element matching selector (default: body) |
+| `POST /puppeteer` | Call Puppeteer page method. Body: `{ "method": "page.goto", "args": ["https://..."] }` |
+
+**Puppeteer whitelist:** `content`, `click`, `focus`, `goto`, `hover`, `pdf`, `screenshot`, `select`, `setDefaultNavigationTimeout`, `setDefaultTimeout`, `setViewport`, `title`, `type`, `url`, `waitForSelector`, `waitForTimeout`
 
 ```bash
 curl http://localhost:60001/dump       # Dump to files
@@ -202,6 +207,9 @@ curl http://localhost:60001/status     # Check status
 curl http://localhost:60001/clear      # Clear buffers
 curl http://localhost:60001/tabs       # List tabs
 curl "http://localhost:60001/tab?index=2"  # Switch to tab 2
+curl "http://localhost:60001/computed-styles?selector=.my-class"  # Get computed CSS
+curl -X POST http://localhost:60001/puppeteer -H "Content-Type: application/json" \
+  -d '{"method":"page.goto","args":["https://example.com"]}'  # Navigate via API
 ```
 
 ## CLI Options
@@ -210,10 +218,13 @@ curl "http://localhost:60001/tab?index=2"  # Switch to tab 2
 |--------|-------------|
 | `--open` | Go directly to open mode (launch new Chrome) |
 | `--join=PORT` | Go directly to join mode; attach to Chrome at PORT (port required) |
+| `--port=PORT` | HTTP API port (default: 60001) |
 | `--headless` | Run Chrome without GUI |
 | `--realtime` | Write logs immediately (default: lazy buffer) |
-| `--timeout=MS` | Hard timeout in ms (0 = disabled) |
-| `--nav-timeout=MS` | Navigation timeout in ms (default: 60000) |
+| `--timeout=MS` | Hard timeout in ms; process exits after (0 = disabled) |
+| `--nav-timeout=MS` | Navigation timeout in ms (default: 60000, 0 = no limit) |
+
+**Config (package.json `"puppeteer-monitor"`):** `defaultUrl`, `headless`, `navigationTimeout`, `ignorePatterns` (regex for console filter)
 
 ---
 
