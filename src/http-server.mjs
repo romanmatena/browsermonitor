@@ -24,6 +24,7 @@ const PAGE_WHITELIST = new Set([
   'content', 'title', 'url',
   'screenshot', 'pdf',
   'setViewport', 'setDefaultTimeout', 'setDefaultNavigationTimeout',
+  'waitForSelector', 'waitForTimeout',
 ]);
 
 /**
@@ -391,6 +392,8 @@ export function createHttpServer(options) {
       }
       const method = body.method;
       const args = Array.isArray(body.args) ? body.args : [];
+      const timeout = typeof body.timeout === 'number' ? body.timeout : PUPPETEER_CALL_TIMEOUT_MS;
+      const waitFor = body.waitFor === true; // auto waitForSelector before click/hover
       if (typeof method !== 'string' || !method.trim()) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
@@ -441,6 +444,13 @@ export function createHttpServer(options) {
         callArgs = [{ ...args[0], encoding: args[0].encoding ?? 'base64' }];
       }
       try {
+        // Auto waitForSelector before click/hover if requested
+        if (waitFor && ['click', 'hover', 'focus', 'type'].includes(methodName) && callArgs[0]) {
+          const selector = callArgs[0];
+          if (typeof selector === 'string') {
+            await page.waitForSelector(selector, { timeout });
+          }
+        }
         const fn = page[methodName];
         if (typeof fn !== 'function') {
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -453,7 +463,7 @@ export function createHttpServer(options) {
         }
         const resultPromise = fn.apply(page, callArgs);
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error(`Timeout after ${PUPPETEER_CALL_TIMEOUT_MS}ms`)), PUPPETEER_CALL_TIMEOUT_MS);
+          setTimeout(() => reject(new Error(`Timeout after ${timeout}ms`)), timeout);
         });
         const result = await Promise.race([resultPromise, timeoutPromise]);
         const serialized = serializeResult(result, methodName);
