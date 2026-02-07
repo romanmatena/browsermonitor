@@ -6,10 +6,10 @@
 import { C } from './utils/colors.mjs';
 import { printCliCommandsTable } from './templates/cli-commands.mjs';
 
-const TITLE = 'Puppeteer Monitor';
+const TITLE = 'Browser Monitor';
 const TAGLINE = 'Browser console, network & DOM capture for debugging and LLM workflows';
-const NPM_URL = 'https://www.npmjs.com/package/puppeteer-monitor';
-const GITHUB_URL = 'https://github.com/romanmatena/puppeteer-monitor';
+const NPM_URL = 'https://www.npmjs.com/package/browsermonitor';
+const GITHUB_URL = 'https://github.com/romanmatena/browsermonitor';
 
 export function printAppIntro() {
   console.log('');

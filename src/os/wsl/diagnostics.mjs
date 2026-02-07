@@ -172,7 +172,7 @@ export async function runWslDiagnostics(port, windowsHostIP) {
     issues.push({
       level: 'error',
       message: 'Chrome is running but without remote debugging enabled',
-      fix: `${C.bold}Close ALL Chrome windows${C.reset} and let puppeteer-monitor start a fresh instance.`
+      fix: `${C.bold}Close ALL Chrome windows${C.reset} and let browsermonitor start a fresh instance.`
     });
     return { issues, canConnect: false };
   }
@@ -230,10 +230,10 @@ export async function runWslDiagnostics(port, windowsHostIP) {
         issues.push({
           level: 'error',
           message: 'Port proxy conflict: Chrome on IPv6 [::1], port proxy expects IPv4 127.0.0.1',
-          fix: `Remove port proxy, then restart puppeteer-monitor Chrome ONLY:\n` +
+          fix: `Remove port proxy, then restart browsermonitor Chrome ONLY:\n` +
                `     ${C.cyan}netsh interface portproxy delete v4tov4 listenport=${inst.port} listenaddress=0.0.0.0${C.reset}\n` +
-               `     ${C.cyan}Get-WmiObject Win32_Process -Filter "name='chrome.exe'" | Where-Object { $_.CommandLine -match 'puppeteer-monitor' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }${C.reset}\n` +
-               `     Then run puppeteer-monitor again.`
+               `     ${C.cyan}Get-WmiObject Win32_Process -Filter "name='chrome.exe'" | Where-Object { $_.CommandLine -match 'browsermonitor' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }${C.reset}\n` +
+               `     Then run browsermonitor again.`
         });
         continue;
       }
@@ -284,8 +284,8 @@ export async function runWslDiagnostics(port, windowsHostIP) {
     issues.push({
       level: 'error',
       message: `Chrome singleton issue: requested port ${port}, but existing Chrome uses ${actualPort}`,
-      fix: `${C.bold}Close ALL Chrome windows${C.reset} and run puppeteer-monitor again.\n` +
-           `     Or use connect mode: puppeteer-monitor --connect=${actualPort}`
+      fix: `${C.bold}Close ALL Chrome windows${C.reset} and run browsermonitor again.\n` +
+           `     Or use connect mode: browsermonitor --join=${actualPort}`
     });
   } else {
     console.log(`  ${C.green}✓${C.reset} Port matches: requested ${port}, Chrome uses ${actualPort}`);
@@ -377,7 +377,7 @@ export async function runWslDiagnostics(port, windowsHostIP) {
         level: 'error',
         message: 'Windows Firewall is blocking incoming connections',
         fix: 'Run in PowerShell (Admin):\n' +
-             `     ${C.cyan}New-NetFirewallRule -DisplayName "Chrome Debug (puppeteer-monitor)" -Direction Inbound -LocalPort 9222-9299 -Protocol TCP -Action Allow -RemoteAddress LocalSubnet,172.16.0.0/12${C.reset}`
+             `     ${C.cyan}New-NetFirewallRule -DisplayName "Chrome Debug (browsermonitor)" -Direction Inbound -LocalPort 9222-9299 -Protocol TCP -Action Allow -RemoteAddress LocalSubnet,172.16.0.0/12${C.reset}`
       });
     }
   }
@@ -506,7 +506,7 @@ export async function runWslDiagnostics(port, windowsHostIP) {
       issues.push(firewallIssue);
 
       // Auto-fix: try to add/update firewall rule from WSL (may need Admin PowerShell if this fails)
-      const ruleName = 'Chrome Debug (puppeteer-monitor)';
+      const ruleName = 'Chrome Debug (browsermonitor)';
       const ruleExists = runPowerShell(`Get-NetFirewallRule -DisplayName '${ruleName}' -ErrorAction SilentlyContinue | Select-Object -First 1`);
       const hasRule = ruleExists && ruleExists.trim().length > 0;
 
@@ -660,16 +660,16 @@ export async function runWslDiagnostics(port, windowsHostIP) {
         console.log(`  ${C.cyan}# Step 1: Remove conflicting port proxy:${C.reset}`);
         console.log(`  netsh interface portproxy delete v4tov4 listenport=${actualPort} listenaddress=0.0.0.0`);
         console.log('');
-        console.log(`  ${C.cyan}# Step 2: Kill puppeteer-monitor Chrome only (not your browser!):${C.reset}`);
-        console.log(`  Get-WmiObject Win32_Process -Filter "name='chrome.exe'" | Where-Object { $_.CommandLine -match 'puppeteer-monitor' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`);
+        console.log(`  ${C.cyan}# Step 2: Kill browsermonitor Chrome only (not your browser!):${C.reset}`);
+        console.log(`  Get-WmiObject Win32_Process -Filter "name='chrome.exe'" | Where-Object { $_.CommandLine -match 'browsermonitor' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`);
         console.log('');
-        console.log(`  ${C.cyan}# Step 3: Run puppeteer-monitor again${C.reset}`);
+        console.log(`  ${C.cyan}# Step 3: Run browsermonitor again${C.reset}`);
         console.log(`  ${C.dim}(Port proxy will be set up automatically after Chrome starts)${C.reset}`);
         console.log('');
         anyCommandPrinted = true;
       } else {
         if (needsFirewall) {
-          const ourRuleName = 'Chrome Debug (puppeteer-monitor)';
+          const ourRuleName = 'Chrome Debug (browsermonitor)';
           const ourRuleExists = runPowerShell(`Get-NetFirewallRule -DisplayName '${ourRuleName}' -ErrorAction SilentlyContinue | ConvertTo-Json`);
           const hasOurRule = ourRuleExists && ourRuleExists !== 'null' && ourRuleExists !== '';
 
@@ -680,7 +680,7 @@ export async function runWslDiagnostics(port, windowsHostIP) {
             console.log(`  ${C.cyan}# Found existing rule "${existingRuleName}" - update it:${C.reset}`);
             console.log(`  Set-NetFirewallRule -DisplayName "${existingRuleName}" -RemoteAddress LocalSubnet,172.16.0.0/12`);
             console.log('');
-            console.log(`  ${C.cyan}# Or create a dedicated rule for puppeteer-monitor:${C.reset}`);
+            console.log(`  ${C.cyan}# Or create a dedicated rule for browsermonitor:${C.reset}`);
             console.log(`  New-NetFirewallRule -DisplayName "${ourRuleName}" -Direction Inbound -LocalPort 9222-9299 -Protocol TCP -Action Allow -RemoteAddress LocalSubnet,172.16.0.0/12`);
           } else {
             console.log(`  ${C.cyan}# Create firewall rule (includes WSL subnet):${C.reset}`);

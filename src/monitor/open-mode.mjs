@@ -78,9 +78,9 @@ export async function runOpenMode(url, options = {}) {
   });
 
   // Chrome profile: stays in project dir or Windows LOCALAPPDATA (not inside .browsermonitor)
-  const USER_DATA_DIR = path.join(outputDir, '.puppeteer-profile');
+  const USER_DATA_DIR = path.join(outputDir, '.browsermonitor-profile');
   // PID file goes into .browsermonitor/ when paths available
-  const PID_FILE = paths ? paths.pidFile : path.join(outputDir, '.puppeteer-chrome.pid');
+  const PID_FILE = paths ? paths.pidFile : path.join(outputDir, '.browsermonitor', 'browsermonitor.pid');
 
   // HTTP server for LLM dump endpoint
   let httpServer = null;
@@ -424,7 +424,7 @@ export async function runOpenMode(url, options = {}) {
   printTable(configTable);
 
   if (realtime) {
-    logBuffer.printNetworkSeparator('PUPPETEER MONITOR STARTED');
+    logBuffer.printNetworkSeparator('BROWSERMONITOR STARTED');
     logBuffer.logNetwork(`URL: ${url}`);
     logBuffer.logNetwork('');
   }
@@ -478,7 +478,7 @@ export async function runOpenMode(url, options = {}) {
         process.exit(1);
       }
 
-      // In launch mode, kill any existing puppeteer-monitor Chrome processes
+      // In launch mode, kill any existing browsermonitor Chrome processes
       clearStatusLine(true);
       const killed = killPuppeteerMonitorChromes();
       if (killed > 0) {
@@ -590,7 +590,7 @@ export async function runOpenMode(url, options = {}) {
           // Path is on WSL filesystem - use Windows LOCALAPPDATA with project-specific profile ID
           const { profileId } = getProfileIdFromProjectDir(outputDir);
           const localAppData = getWindowsLocalAppData();
-          windowsUserDataDir = `${localAppData}\\puppeteer-monitor\\${profileId}`;
+          windowsUserDataDir = `${localAppData}\\browsermonitor\\${profileId}`;
         }
 
         // CMD.EXE stderr + Profile/Project in bullet box
@@ -750,14 +750,14 @@ export async function runOpenMode(url, options = {}) {
 
             console.log(`${C.cyan}[2/2]${C.reset} Stopping Chrome...`);
             try {
-              killPuppeteerMonitorChromes(true); // Only kill puppeteer-monitor Chrome, not user's browser!
+              killPuppeteerMonitorChromes(true); // Only kill browsermonitor Chrome, not user's browser!
               console.log(`  ${C.green}✓${C.reset} Chrome stopped`);
             } catch (e) {
               console.log(`  ${C.yellow}!${C.reset} Could not stop Chrome: ${e.message}`);
             }
 
             console.log('');
-            console.log(`${C.green}Fix applied!${C.reset} Please run puppeteer-monitor again.`);
+            console.log(`${C.green}Fix applied!${C.reset} Please run browsermonitor again.`);
             console.log(`${C.dim}Chrome will now bind to 0.0.0.0 correctly (no port proxy needed).${C.reset}`);
             console.log('');
             process.exit(0);

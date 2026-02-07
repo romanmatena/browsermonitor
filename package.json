@@ -1,53 +1,49 @@
 {
-  "name": "puppeteer-monitor",
-  "version": "1.11.5",
-  "description": "Browser console, network, DOM monitoring for debugging. Captures console, network, cookies, screenshot, DOM. HTTP API for LLM/scripts. WSL+Windows, Linux, Open/Join modes.",
+  "name": "browsermonitor",
+  "version": "2.0.0",
+  "description": "Browser console, network, DOM monitoring for debugging and LLM workflows. Captures console, network, cookies, screenshot, DOM. HTTP API for LLM/scripts. WSL+Windows, Linux, Open/Join modes.",
   "type": "module",
   "bin": {
-    "puppeteer-monitor": "./src/cli.mjs",
-    "puppeteer-monitor-init": "./src/init.mjs"
+    "browsermonitor": "./src/cli.mjs"
   },
   "main": "./src/monitor.mjs",
   "files": [
-    "src",
-    "scripts"
+    "src"
   ],
-  "scripts": {
-    "prepare": "node scripts/postinstall.mjs",
-    "browsermonitor": "puppeteer-monitor"
-  },
-  "peerDependencies": {
-    "puppeteer": ">=24.15.0"
-  },
   "engines": {
     "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/romanmatena/puppeteer-monitor.git"
+    "url": "https://github.com/romanmatena/browsermonitor.git"
   },
   "author": "24gate",
   "license": "MIT",
-  "devDependencies": {
-    "puppeteer": "^24.36.1"
-  },
-  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
   "dependencies": {
     "boxen": "^8.0.1",
-    "cli-table3": "^0.6.5"
+    "cli-table3": "^0.6.5",
+    "puppeteer": "^24.36.1"
   },
-  "homepage": "https://github.com/romanmatena/puppeteer-monitor#readme",
+  "puppeteer": {
+    "skipDownload": true
+  },
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
+  "homepage": "https://github.com/romanmatena/browsermonitor#readme",
   "bugs": {
-    "url": "https://github.com/romanmatena/puppeteer-monitor/issues"
+    "url": "https://github.com/romanmatena/browsermonitor/issues"
   },
   "keywords": [
-    "puppeteer",
     "browser",
-    "debugging",
+    "browsermonitor",
+    "chrome",
     "console",
+    "debugging",
+    "devtools",
     "dom",
     "llm",
     "monitoring",
+    "network",
+    "puppeteer",
     "screenshot",
     "wsl"
   ],

@@ -23,17 +23,17 @@ export const API_ENDPOINTS = [
 ];
 
 export const OUTPUT_FILES = [
-  { path: 'puppeteer-console.log', description: 'Browser console output' },
-  { path: 'puppeteer-network.log', description: 'Network requests overview (IDs)' },
-  { path: 'puppeteer-network-log/', description: 'Per-request JSON (headers, payload, response)' },
-  { path: 'puppeteer-cookies/', description: 'Cookies per domain (JSON)' },
-  { path: 'puppeteer-dom.html', description: 'Current page DOM (for LLM / structure)' },
-  { path: 'puppeteer-screenshot.png', description: 'Screenshot of current tab viewport' },
+  { path: '.browsermonitor/.puppeteer/console.log', description: 'Browser console output' },
+  { path: '.browsermonitor/.puppeteer/network.log', description: 'Network requests overview (IDs)' },
+  { path: '.browsermonitor/.puppeteer/network-log/', description: 'Per-request JSON (headers, payload, response)' },
+  { path: '.browsermonitor/.puppeteer/cookies/', description: 'Cookies per domain (JSON)' },
+  { path: '.browsermonitor/.puppeteer/dom.html', description: 'Current page DOM (for LLM / structure)' },
+  { path: '.browsermonitor/.puppeteer/screenshot.png', description: 'Screenshot of current tab viewport' },
 ];
 
 /** Full description for API section. */
 const API_DESCRIPTION =
-  'For LLM Coding agents: Puppeteer Monitor captures live browser state (console, network, DOM) and writes it to files. You or an LLM read those files instead of copy-pasting from DevTools. For debugging or feeding context to AI you need the real console, DOM, and traffic—this tool gives a one-command snapshot. Frontend devs and teams using LLM agents need it; without it, a reliable live-browser snapshot is much harder. Essential for E2E and for feeding DOM and network data to LLM agents.';
+  'For LLM Coding agents: Browser Monitor captures live browser state (console, network, DOM) and writes it to files. You or an LLM read those files instead of copy-pasting from DevTools. For debugging or feeding context to AI you need the real console, DOM, and traffic—this tool gives a one-command snapshot. Frontend devs and teams using LLM agents need it; without it, a reliable live-browser snapshot is much harder. Essential for E2E and for feeding DOM and network data to LLM agents.';
 
 const API_USAGE =
   'Use curl to communicate with the HTTP API over REST. GET for status/dump/tabs etc.; POST for /puppeteer with JSON body. Example: curl http://127.0.0.1:60001/status  curl -X POST http://127.0.0.1:60001/puppeteer -H "Content-Type: application/json" -d \'{"method":"page.goto","args":["https://example.com"]}\'';

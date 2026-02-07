@@ -1,5 +1,5 @@
 /**
- * HTTP server for puppeteer-monitor.
+ * HTTP server for browsermonitor.
  *
  * Provides HTTP API endpoints for LLM/script integration:
  * - GET /dump - Trigger dump; writes files and returns paths + LLM-oriented description

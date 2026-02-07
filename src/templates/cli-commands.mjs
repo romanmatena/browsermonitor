@@ -9,16 +9,17 @@ import { createTable, printTable, INDENT } from './table-helper.mjs';
 
 // ─── Data (edit only here) ─────────────────────────────────────────────────
 
-export const ENTRY_POINT = 'puppeteer-monitor  (or: pnpm browsermonitor when wired in package.json scripts)';
+export const ENTRY_POINT = 'browsermonitor';
 
-export const USAGE = 'puppeteer-monitor [url] [options]';
+export const USAGE = 'browsermonitor [url] [options]';
 
 export const CLI_EXAMPLES = [
-  { command: 'puppeteer-monitor', description: 'Interactive menu, then o = open / j = join / q = quit' },
-  { command: 'puppeteer-monitor --open', description: 'Launch Chrome and monitor (URL from config or first arg)' },
-  { command: 'puppeteer-monitor --open https://localhost:5173/', description: 'Open with URL' },
-  { command: 'puppeteer-monitor --join=9222', description: 'Attach to Chrome with remote debugging on port 9222' },
-  { command: 'puppeteer-monitor --help', description: 'Show full help (options, API table, examples)' },
+  { command: 'browsermonitor', description: 'Interactive menu, then o = open / j = join / q = quit' },
+  { command: 'browsermonitor --open', description: 'Launch Chrome and monitor (URL from settings or first arg)' },
+  { command: 'browsermonitor --open https://localhost:5173/', description: 'Open with URL' },
+  { command: 'browsermonitor --join=9222', description: 'Attach to Chrome with remote debugging on port 9222' },
+  { command: 'browsermonitor init', description: 'Run setup: create .browsermonitor/, settings.json, update agent files' },
+  { command: 'browsermonitor --help', description: 'Show full help (options, API table, examples)' },
 ];
 
 /**

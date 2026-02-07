@@ -1,37 +1,37 @@
 <div align="center">
 
-![Puppeteer Monitor](docs/banner.png)
+![Browser Monitor](docs/banner.png)
 
-# Puppeteer Monitor
+# Browser Monitor
 
-[![CI](https://github.com/romanmatena/puppeteer-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/romanmatena/puppeteer-monitor/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/puppeteer-monitor.svg)](https://www.npmjs.com/package/puppeteer-monitor)
-[![npm downloads](https://img.shields.io/npm/dm/puppeteer-monitor.svg)](https://www.npmjs.com/package/puppeteer-monitor)
+[![CI](https://github.com/romanmatena/browsermonitor/actions/workflows/ci.yml/badge.svg)](https://github.com/romanmatena/browsermonitor/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/browsermonitor.svg)](https://www.npmjs.com/package/browsermonitor)
+[![npm downloads](https://img.shields.io/npm/dm/browsermonitor.svg)](https://www.npmjs.com/package/browsermonitor)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-romanmatena%2Fpuppeteer--monitor-24292e?logo=github)](https://github.com/romanmatena/puppeteer-monitor)
+[![GitHub](https://img.shields.io/badge/GitHub-romanmatena%2Fbrowsermonitor-24292e?logo=github)](https://github.com/romanmatena/browsermonitor)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
 
 Browser console, network, DOM, and screenshot monitoring for debugging and LLM workflows.
 
-**[npm](https://www.npmjs.com/package/puppeteer-monitor)** · **[GitHub](https://github.com/romanmatena/puppeteer-monitor)**
+**[npm](https://www.npmjs.com/package/browsermonitor)** · **[GitHub](https://github.com/romanmatena/browsermonitor)**
 
 [Installation](#installation) · [Quick Start](#quick-start) · [HTTP API](#http-api) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
-**What it is:** Puppeteer Monitor lets you capture the live state of a browser—console output, network requests, cookies, screenshot, and the current page DOM—and write it all to files. You (or an LLM agent) can then read those files instead of asking someone to copy-paste from DevTools or the browser.
+**What it is:** Browser Monitor lets you capture the live state of a browser—console output, network requests, cookies, screenshot, and the current page DOM—and write it all to files. You (or an LLM agent) can then read those files instead of asking someone to copy-paste from DevTools or the browser.
 
-**Why it’s useful:** When debugging a frontend app or feeding context to an AI assistant, you need the real console, the real DOM, and the real network traffic. Manual copy-paste is slow and error-prone. This tool connects to Chrome via Puppeteer, records everything in one place, and exposes a simple “dump” so the next step is always “read the files” instead of “please open the browser and copy this.”
+**Why it's useful:** When debugging a frontend app or feeding context to an AI assistant, you need the real console, the real DOM, and the real network traffic. Manual copy-paste is slow and error-prone. This tool connects to Chrome via Puppeteer, records everything in one place, and exposes a simple "dump" so the next step is always "read the files" instead of "please open the browser and copy this."
 
-**Who needs it:** Frontend and full-stack developers who debug in the browser; teams using LLM coding agents that need up-to-date DOM and network data; anyone who wants a repeatable way to snapshot browser state for logs, tests, or AI context. If you’ve ever asked a colleague to “send me what you see in the console” or “paste the HTML of that element,” you need this. Without it, getting a reliable, one-command snapshot of the live browser is much harder.
+**Who needs it:** Frontend and full-stack developers who debug in the browser; teams using LLM coding agents that need up-to-date DOM and network data; anyone who wants a repeatable way to snapshot browser state for logs, tests, or AI context. If you've ever asked a colleague to "send me what you see in the console" or "paste the HTML of that element," you need this. Without it, getting a reliable, one-command snapshot of the live browser is much harder.
 
-**Entry point:** `puppeteer-monitor` (CLI in `src/cli.mjs`). Often wired as `pnpm browsermonitor` in your `package.json` scripts.
+**Entry point:** `browsermonitor` (global CLI). Run it in any project directory.
 
 ### Features
 
 - **Console, network, DOM, cookies, screenshot** – capture full browser state in one dump
-- **Screenshot** – each dump writes `puppeteer-screenshot.png` (current tab viewport); ideal for LLM vision or quick visual checks
+- **Screenshot** – each dump writes `.browsermonitor/.puppeteer/screenshot.png` (current tab viewport); ideal for LLM vision or quick visual checks
 - **HTTP REST API** – trigger dump, status, clear, tab switch via `curl` (ideal for LLM agents)
 - **Multiple modes** – Interactive (menu), Open (launch Chrome), Join (attach to existing)
 - **WSL + Windows** – Chrome on Windows, app in WSL with automatic port proxy
@@ -46,38 +46,37 @@ Browser console, network, DOM, and screenshot monitoring for debugging and LLM w
 
 ## Installation
 
-Available on [npm](https://www.npmjs.com/package/puppeteer-monitor):
+Install globally from [npm](https://www.npmjs.com/package/browsermonitor):
 
 ```bash
-# Using pnpm (recommended)
-pnpm add -D puppeteer-monitor puppeteer
+# Using npm
+npm install -g browsermonitor
 
-# Or npm
-npm install -D puppeteer-monitor puppeteer
-
-# Or yarn
-yarn add -D puppeteer-monitor puppeteer
+# Or pnpm
+pnpm add -g browsermonitor
 ```
 
-Or from GitHub: `pnpm add -D https://github.com/romanmatena/puppeteer-monitor`
+**Note:** Chromium download is skipped — browsermonitor uses your system Chrome/Chromium. No extra 300 MB download.
 
-**Setup (optional):** From your project root run `npx puppeteer-monitor-init` to add the `browsermonitor` script to `package.json` and optionally a Browser Monitor section to `CLAUDE.md`, `AGENTS.md`, and `memory.md` (if those files exist).
+**First run:** When you run `browsermonitor` in a project directory for the first time, it auto-creates `.browsermonitor/` with `settings.json` and optionally updates agent files (`CLAUDE.md`, `AGENTS.md`, `memory.md`).
+
+**Manual setup:** Run `browsermonitor init` to re-run the setup wizard.
 
 ## Quick Start
 
 ```bash
-pnpm browsermonitor                    # Interactive: menu → o (open) or j (join)
-pnpm browsermonitor --open              # Open mode: launch new Chrome and monitor
-pnpm browsermonitor --join=9222        # Join mode: attach to existing Chrome on port 9222
+browsermonitor                    # Interactive: menu → o (open) or j (join)
+browsermonitor --open             # Open mode: launch new Chrome and monitor
+browsermonitor --join=9222        # Join mode: attach to existing Chrome on port 9222
 ```
 
 ## Modes
 
 | Mode        | How to run              | When to use |
 |------------|--------------------------|-------------|
-| **Interactive** | `puppeteer-monitor` (no flags) | Menu asks for project root, then: **o** = open Chrome, **j** = join running Chrome, **q** = quit. |
-| **Open**   | `puppeteer-monitor --open [url]` | Launch a new Chrome and monitor it. Uses current dir for logs. |
-| **Join**   | `puppeteer-monitor --join=PORT`  | Attach to an existing Chrome with remote debugging on PORT (e.g. 9222). Port is required. |
+| **Interactive** | `browsermonitor` (no flags) | Menu asks for project root, then: **o** = open Chrome, **j** = join running Chrome, **q** = quit. |
+| **Open**   | `browsermonitor --open [url]` | Launch a new Chrome and monitor it. Uses current dir for logs. |
+| **Join**   | `browsermonitor --join=PORT`  | Attach to an existing Chrome with remote debugging on PORT (e.g. 9222). Port is required. |
 
 ---
 
@@ -87,7 +86,7 @@ pnpm browsermonitor --join=9222        # Join mode: attach to existing Chrome on
 
 ```powershell
 cd C:\Projects\my-app
-pnpm browsermonitor --open https://localhost:5173/
+browsermonitor --open https://localhost:5173/
 ```
 
 Open mode launches Chrome via Puppeteer. No port proxy or firewall setup needed.
@@ -102,12 +101,12 @@ Open mode launches Chrome via Puppeteer. No port proxy or firewall setup needed.
 
 ```bash
 cd /srv/project
-pnpm browsermonitor --open https://localhost:5173/
+browsermonitor --open https://localhost:5173/
 ```
 
 **How it works:** Open mode detects WSL and launches Chrome Canary on Windows, sets up port proxy (0.0.0.0:9222 → Chrome), and connects from WSL via the Windows gateway IP. Port proxy requires Administrator (one-time) on first run.
 
-**Join mode** (attach to existing Chrome): Start Chrome manually with `--remote-debugging-port=9222`, then `pnpm browsermonitor --join=9222` from WSL. For port proxy, run in PowerShell (Admin): `netsh interface portproxy add v4tov4 listenport=9222 listenaddress=0.0.0.0 connectport=9222 connectaddress=127.0.0.1`
+**Join mode** (attach to existing Chrome): Start Chrome manually with `--remote-debugging-port=9222`, then `browsermonitor --join=9222` from WSL. For port proxy, run in PowerShell (Admin): `netsh interface portproxy add v4tov4 listenport=9222 listenaddress=0.0.0.0 connectport=9222 connectaddress=127.0.0.1`
 
 ---
 
@@ -116,7 +115,7 @@ pnpm browsermonitor --open https://localhost:5173/
 **When to use:** You develop on native Linux (Ubuntu, etc.) with a display. Chrome/Chromium runs with GUI on the same machine.
 
 ```bash
-pnpm browsermonitor --open https://localhost:5173/
+browsermonitor --open https://localhost:5173/
 ```
 
 Chrome/Chromium is started via Puppeteer with `--remote-debugging-port`. No port proxy needed; direct localhost connection.
@@ -125,37 +124,57 @@ Chrome/Chromium is started via Puppeteer with `--remote-debugging-port`. No port
 - Chrome or Chromium installed: `apt install chromium-browser` or install Google Chrome
 - Display available (X11 or Wayland)
 
-For **join mode** (attach to existing Chrome): start Chrome manually with `--remote-debugging-port=9222`, then `pnpm browsermonitor --join=9222`.
+For **join mode** (attach to existing Chrome): start Chrome manually with `--remote-debugging-port=9222`, then `browsermonitor --join=9222`.
 
 ---
 
 ## Chrome Profile
 
 Each project gets its own Chrome profile:
-- **WSL:** `%LOCALAPPDATA%\puppeteer-monitor\{project}_{hash}` (Windows path)
-- **Native:** `.puppeteer-profile/` in project dir
+- **WSL:** `%LOCALAPPDATA%\browsermonitor\{project}_{hash}` (Windows path)
+- **Native:** `.browsermonitor-profile/` in project dir
 
 Separate cookies and logins per project; won't interfere with your regular Chrome.
 
 ---
 
-## Chrome Canary (Recommended for Open Mode)
+## Chrome Canary (Required)
 
-For **open mode** (`--open`), puppeteer-monitor uses **Chrome Canary** by default when available:
+browsermonitor **requires Chrome Canary** for launching Chrome (`--open` and `--join` when no Chrome is running). Regular Chrome cannot be used because Chrome is a singleton — all instances bind to the first launched process. If your regular Chrome is already open, a new Chrome with `--remote-debugging-port` would just open a window in the existing process and the debug port would be ignored.
 
-**Why Chrome Canary?**
-- Runs as a **separate process** from your regular Chrome (different singleton)
+Chrome Canary runs as a completely **separate process** from regular Chrome (different singleton, different profile directory), so:
 - Your regular Chrome stays completely untouched
-- No port conflicts or singleton hijacking issues
+- Debug port is guaranteed to work
+- No singleton hijacking issues
 
 **Installation:**
 1. Download from: https://www.google.com/chrome/canary/
 2. Install (goes to `%LOCALAPPDATA%\Google\Chrome SxS\`)
-3. puppeteer-monitor will detect it automatically
+3. browsermonitor will detect it automatically
 
-**Join mode** (`--join=9222`) works with any Chrome; Canary is only recommended for open mode.
+**Note:** If you already have Chrome running with `--remote-debugging-port` (e.g. started manually), you can connect to it with `browsermonitor --join=PORT` regardless of whether it's Canary or regular Chrome.
 
 ---
+
+## Project Directory Structure
+
+When browsermonitor runs in a project directory, it creates:
+
+```
+<project-root>/
+├── .browsermonitor/
+│   ├── settings.json          # Project config (defaultUrl, httpPort, etc.)
+│   ├── browsermonitor.pid     # PID file for recovery
+│   └── .puppeteer/            # All dump outputs
+│       ├── console.log
+│       ├── network.log
+│       ├── network-log/       # Per-request JSON files
+│       ├── cookies/           # Per-domain cookie JSONs
+│       ├── dom.html
+│       └── screenshot.png
+└── .browsermonitor-profile/   # Chrome profile (native) or
+                               # %LOCALAPPDATA%\browsermonitor\ (WSL)
+```
 
 ## Keyboard Controls (open/join mode)
 
@@ -174,12 +193,12 @@ For **open mode** (`--open`), puppeteer-monitor uses **Chrome Canary** by defaul
 
 | File | Description |
 |------|-------------|
-| `puppeteer-console.log` | Console output |
-| `puppeteer-network.log` | Network requests |
-| `puppeteer-network-log/` | Detailed request/response JSON |
-| `puppeteer-cookies/` | Cookies per domain |
-| `puppeteer-dom.html` | Current page HTML (JS-modified element tree). **LLM: read this for the live DOM structure.** |
-| `puppeteer-screenshot.png` | Screenshot of the current tab viewport (PNG). Written on each dump. |
+| `.browsermonitor/.puppeteer/console.log` | Console output |
+| `.browsermonitor/.puppeteer/network.log` | Network requests |
+| `.browsermonitor/.puppeteer/network-log/` | Detailed request/response JSON |
+| `.browsermonitor/.puppeteer/cookies/` | Cookies per domain |
+| `.browsermonitor/.puppeteer/dom.html` | Current page HTML (JS-modified element tree). **LLM: read this for the live DOM structure.** |
+| `.browsermonitor/.puppeteer/screenshot.png` | Screenshot of the current tab viewport (PNG). Written on each dump. |
 
 All files are written on dump (key `d` or `curl …/dump`).
 
@@ -218,13 +237,13 @@ curl -X POST http://localhost:60001/puppeteer -H "Content-Type: application/json
 |--------|-------------|
 | `--open` | Go directly to open mode (launch new Chrome) |
 | `--join=PORT` | Go directly to join mode; attach to Chrome at PORT (port required) |
-| `--port=PORT` | HTTP API port (default: 60001) |
+| `--port=PORT` | HTTP API port (default: from settings or 60001) |
 | `--headless` | Run Chrome without GUI |
 | `--realtime` | Write logs immediately (default: lazy buffer) |
 | `--timeout=MS` | Hard timeout in ms; process exits after (0 = disabled) |
-| `--nav-timeout=MS` | Navigation timeout in ms (default: 60000, 0 = no limit) |
+| `--nav-timeout=MS` | Navigation timeout in ms (default: from settings, 0 = no limit) |
 
-**Config (package.json `"puppeteer-monitor"`):** `defaultUrl`, `headless`, `navigationTimeout`, `ignorePatterns` (regex for console filter)
+**Config (`.browsermonitor/settings.json`):** `defaultUrl`, `headless`, `navigationTimeout`, `ignorePatterns`, `httpPort`, `realtime`
 
 ---
 
@@ -259,11 +278,11 @@ Port proxy blocks port 9222 during Chrome startup. Open mode handles this automa
 netsh interface portproxy delete v4tov4 listenport=9222 listenaddress=0.0.0.0
 netsh interface portproxy delete v4tov6 listenport=9222 listenaddress=0.0.0.0
 
-# 2. Kill ONLY puppeteer-monitor Chrome (NOT your regular browser!)
-Get-WmiObject Win32_Process -Filter "name='chrome.exe'" | Where-Object { $_.CommandLine -match 'puppeteer-monitor' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+# 2. Kill ONLY browsermonitor Chrome (NOT your regular browser!)
+Get-WmiObject Win32_Process -Filter "name='chrome.exe'" | Where-Object { $_.CommandLine -match 'browsermonitor' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 
 # 3. Start Chrome Canary (recommended - isolated from regular Chrome)
-Start-Process "$env:LOCALAPPDATA\Google\Chrome SxS\Application\chrome.exe" -ArgumentList "--remote-debugging-port=9222","--user-data-dir=$env:LOCALAPPDATA\puppeteer-monitor\manual"
+Start-Process "$env:LOCALAPPDATA\Google\Chrome SxS\Application\chrome.exe" -ArgumentList "--remote-debugging-port=9222","--user-data-dir=$env:LOCALAPPDATA\browsermonitor\manual"
 
 # 4. Wait 5s, check binding, add appropriate proxy
 Start-Sleep 5
@@ -295,7 +314,7 @@ WSL2 runs in a lightweight Hyper-V virtual machine with its own network stack:
 │   ┌─────────────────────────────────────────────────┐   │
 │   │ WSL2 VM (e.g., 172.29.100.50)                   │   │
 │   │                                                 │   │
-│   │   puppeteer-monitor trying to connect...        │   │
+│   │   browsermonitor trying to connect...           │   │
 │   │   → 127.0.0.1:9222 ❌ (WSL's own localhost)     │   │
 │   │   → 172.29.96.1:9222 ✅ (Windows gateway)       │   │
 │   └─────────────────────────────────────────────────┘   │
@@ -408,7 +427,7 @@ Get-NetFirewallRule -DisplayName "*Chrome*" | Get-NetFirewallPortFilter
 
 # Add rule with WSL subnet (one-time, persists across reboots)
 # 172.16.0.0/12 covers the WSL2 dynamic IP range
-New-NetFirewallRule -DisplayName "Chrome Debug (puppeteer-monitor)" -Direction Inbound -LocalPort 9222-9299 -Protocol TCP -Action Allow -RemoteAddress LocalSubnet,172.16.0.0/12
+New-NetFirewallRule -DisplayName "Chrome Debug (browsermonitor)" -Direction Inbound -LocalPort 9222-9299 -Protocol TCP -Action Allow -RemoteAddress LocalSubnet,172.16.0.0/12
 
 # Update existing rule if it doesn't include WSL subnet
 Set-NetFirewallRule -DisplayName "Chrome Remote Debugging" -RemoteAddress LocalSubnet,172.16.0.0/12
@@ -418,7 +437,7 @@ Set-NetFirewallRule -DisplayName "Chrome Remote Debugging" -RemoteAddress LocalS
 
 ### The 7-Step Diagnostic Process
 
-The `runWslDiagnostics()` function in monitor.mjs performs:
+The `runWslDiagnostics()` function performs:
 
 | Step | Check | Method |
 |------|-------|--------|
@@ -434,7 +453,7 @@ The `runWslDiagnostics()` function in monitor.mjs performs:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ puppeteer-monitor --join=9222                                │
+│ browsermonitor --join=9222                                    │
 └──────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -533,6 +552,7 @@ netstat -ano | findstr "9222.*LISTEN"
 ### Code References
 
 - **Entry point:** [cli.mjs](src/cli.mjs) – argument parsing, mode dispatch
+- **Settings:** [settings.mjs](src/settings.mjs) – project paths, config loading
 - **Modes:** [monitor.mjs](src/monitor.mjs) re-exports; implementations in [monitor/join-mode.mjs](src/monitor/join-mode.mjs), [monitor/open-mode.mjs](src/monitor/open-mode.mjs), [monitor/interactive-mode.mjs](src/monitor/interactive-mode.mjs)
-- **WSL:** [wsl/index.mjs](src/wsl/index.mjs) – `runWslDiagnostics()`, `scanChromeInstances()`, `isWsl`, Chrome launch and port proxy helpers
-- **Chrome launch (WSL):** [wsl/chrome.mjs](src/wsl/chrome.mjs) – `startChromeOnWindows()`, port proxy, profile path
+- **WSL:** [os/wsl/index.mjs](src/os/wsl/index.mjs) – `runWslDiagnostics()`, `scanChromeInstances()`, Chrome launch and port proxy helpers
+- **Chrome launch (WSL):** [os/wsl/chrome.mjs](src/os/wsl/chrome.mjs) – `startChromeOnWindows()`, port proxy, profile path

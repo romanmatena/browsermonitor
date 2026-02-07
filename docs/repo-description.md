@@ -1,6 +1,6 @@
 # Repo description (GitHub / Git server)
 
-**Links:** [npm](https://www.npmjs.com/package/puppeteer-monitor) · [GitHub](https://github.com/romanmatena/puppeteer-monitor)
+**Links:** [npm](https://www.npmjs.com/package/browsermonitor) · [GitHub](https://github.com/romanmatena/browsermonitor)
 
 Short description for the repository (About / description field):
 

@@ -15,7 +15,7 @@ import { getWindowsProfilePath } from '../os/wsl/chrome.mjs';
 export function getChromeProfileLocation(projectDir) {
   if (!isWsl()) {
     return {
-      path: path.join(projectDir, '.puppeteer-profile'),
+      path: path.join(projectDir, '.browsermonitor-profile'),
       where: 'Project directory',
     };
   }
@@ -25,13 +25,13 @@ export function getChromeProfileLocation(projectDir) {
       .replace(/^\/mnt\/([a-z])\//, (_, d) => `${d.toUpperCase()}:\\`)
       .replace(/\//g, '\\');
     return {
-      path: `${winPath}\\.puppeteer-profile`,
+      path: `${winPath}\\.browsermonitor-profile`,
       where: 'Windows (same drive as project)',
     };
   }
 
   return {
     path: getWindowsProfilePath(projectDir),
-    where: 'Windows (LOCALAPPDATA\\puppeteer-monitor\\)',
+    where: 'Windows (LOCALAPPDATA\\browsermonitor\\)',
   };
 }

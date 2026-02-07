@@ -1,6 +1,6 @@
-## Browser Monitor (Puppeteer Monitor)
+## Browser Monitor
 
-Tool to monitor browser console and network requests while debugging. Modes:
+Global CLI tool to monitor browser console and network requests while debugging. Modes:
 - **Interactive** – menu (o = open, j = join, q = quit)
 - **Open** – launch new Chrome via Puppeteer
 - **Join** – attach to existing Chrome with remote debugging
@@ -9,16 +9,19 @@ Tool to monitor browser console and network requests while debugging. Modes:
 
 ```bash
 # INTERACTIVE - Menu
-pnpm browsermonitor
+browsermonitor
 
 # OPEN - Launch new Chrome
-pnpm browsermonitor --open
-pnpm browsermonitor --open https://myapp.example.com/
-pnpm browsermonitor --open --headless
-pnpm browsermonitor --open --realtime
+browsermonitor --open
+browsermonitor --open https://myapp.example.com/
+browsermonitor --open --headless
+browsermonitor --open --realtime
 
 # JOIN - Attach to existing Chrome
-pnpm browsermonitor --join=9222
+browsermonitor --join=9222
+
+# INIT - Re-run setup
+browsermonitor init
 ```
 
 ### Modes
@@ -41,38 +44,38 @@ pnpm browsermonitor --join=9222
 
 ### Output Files
 
-All files are created in project root (where you run the command):
+All files are created in `.browsermonitor/.puppeteer/` under the project root:
 
-- `puppeteer-console.log` - Console output (filtered, with HMR markers)
-- `puppeteer-network.log` - Network requests overview with request IDs
-- `puppeteer-network-log/` - Directory with detailed request files:
+- `.browsermonitor/.puppeteer/console.log` - Console output (filtered, with HMR markers)
+- `.browsermonitor/.puppeteer/network.log` - Network requests overview with request IDs
+- `.browsermonitor/.puppeteer/network-log/` - Directory with detailed request files:
   - `{id}.json` - Full details (headers, payload, response) for each request
-- `puppeteer-cookies/` - Directory with cookie files (per domain):
+- `.browsermonitor/.puppeteer/cookies/` - Directory with cookie files (per domain):
   - `{domain}.json` - Cookies for specific domain
-- `puppeteer-dom.html` - **Current page HTML (JS-modified element tree).** Written on each dump (key `d` or `curl …/dump`). Use this to read the live DOM structure (e.g. for LLM or debugging).
-- `puppeteer-screenshot.png` - Screenshot of the current tab viewport (on dump).
+- `.browsermonitor/.puppeteer/dom.html` - **Current page HTML (JS-modified element tree).** Written on each dump (key `d` or `curl …/dump`). Use this to read the live DOM structure (e.g. for LLM or debugging).
+- `.browsermonitor/.puppeteer/screenshot.png` - Screenshot of the current tab viewport (on dump).
 
 ### Workflow
 
-1. Start monitor: `pnpm browsermonitor`
+1. Start monitor: `browsermonitor`
 2. Press `c` to clear buffer (remove startup noise)
 3. Interact with the application in the browser
 4. Press `s` to check buffer status
 5. Press `d` to dump logs (and DOM) to files
-6. Read `puppeteer-console.log` for console output
-7. Read `puppeteer-network.log` for request overview
-8. Check `puppeteer-network-log/{id}.json` for specific request details
-9. Read `puppeteer-dom.html` for current page structure (elements).
+6. Read `.browsermonitor/.puppeteer/console.log` for console output
+7. Read `.browsermonitor/.puppeteer/network.log` for request overview
+8. Check `.browsermonitor/.puppeteer/network-log/{id}.json` for specific request details
+9. Read `.browsermonitor/.puppeteer/dom.html` for current page structure (elements).
 
 ### Features
 
-- **Persistent session** - Browser profile saved in `.puppeteer-profile/`, no re-login needed
+- **Persistent session** - Browser profile saved in `.browsermonitor-profile/` (native) or `%LOCALAPPDATA%\browsermonitor\` (WSL), no re-login needed
 - **Noise filtering** - Ignores IndexedDB, BackendSync, heartbeat logs
 - **HMR detection** - Clear markers when code changes via Hot Module Replacement
 - **Console clear** - Type `console.clear()` in browser to reset console buffer
 - **Full request details** - Headers, payload, response body in JSON files
 - **All cookies** - Dumps cookies from all domains via CDP (including HttpOnly)
-- **DOM dump** - On each dump (key `d` or `curl …/dump`), current page HTML is saved to `puppeteer-dom.html` (JS-modified element tree for LLM/debugging).
+- **DOM dump** - On each dump (key `d` or `curl …/dump`), current page HTML is saved to `.browsermonitor/.puppeteer/dom.html` (JS-modified element tree for LLM/debugging).
 - **HTTP API** - `curl http://localhost:60001/dump`, `/status`, `/clear`, `/tabs`, `/tab?index=N`
 
 ---
@@ -86,12 +89,12 @@ Join mode attaches to an existing Chrome with `--remote-debugging-port=9222`. Us
 **Start Chrome manually** (local PC), then from monitor machine:
 
 ```bash
-pnpm browsermonitor --join=9222
+browsermonitor --join=9222
 ```
 
 ### Interactive Tab Selection
 
-When you connect, puppeteer-monitor shows all open tabs and lets you choose:
+When you connect, browsermonitor shows all open tabs and lets you choose:
 
 ```
 [Monitor] Found 3 open tab(s):

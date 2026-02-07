@@ -11,7 +11,8 @@ import { C, log } from '../utils/colors.mjs';
 import { getChromeProfileLocation } from '../utils/chrome-profile-path.mjs';
 import {
   getWindowsHostForWSL,
-  detectWindowsChromePath,
+  detectWindowsChromeCanaryPath,
+  printCanaryInstallInstructions,
   scanChromeInstances,
   findProjectChrome,
   findFreeDebugPort,
@@ -351,10 +352,8 @@ export async function runJoinMode(port, options = {}) {
 
   if (isWSL) {
     writeStatusLine(`${C.dim}Detecting Chrome...${C.reset}`);
-    // Detect Chrome path
-    const detectedChromePath = detectWindowsChromePath();
-    const chromePath = detectedChromePath || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-    const chromeFound = !!detectedChromePath;
+    // Chrome Canary required for launching (isolated from regular Chrome singleton)
+    const chromePath = detectWindowsChromeCanaryPath();
 
     // Profile path (same logic as open-mode: WSL → Windows LOCALAPPDATA, native → project dir)
     const profileLoc = getChromeProfileLocation(outputDir);
@@ -364,7 +363,7 @@ export async function runJoinMode(port, options = {}) {
     const projectMatch = findProjectChrome(instances, outputDir);
 
     // Show block only when Chrome not found / not reachable (errors)
-    const showSetupBlock = !projectMatch.found || !chromeFound;
+    const showSetupBlock = !projectMatch.found || !chromePath;
     if (showSetupBlock) {
       clearStatusLine();
       console.log('');
@@ -419,24 +418,22 @@ export async function runJoinMode(port, options = {}) {
           `${C.yellow}Close Chrome and re-run to retry.${C.reset}`,
         ].join('\n');
       }
-    } else if (chromeFound) {
+    } else if (chromePath) {
       actualPort = findFreeDebugPort(instances, port);
       clearStatusLine();
       console.log(`  ${C.yellow}No Chrome for this project.${C.reset} Port ${actualPort}, profile ${C.dim}${profileLoc.path}${C.reset}`);
-      shouldLaunchChrome = await askYesNo(`  Launch Chrome for this project?`);
+      shouldLaunchChrome = await askYesNo(`  Launch Chrome Canary for this project?`);
     } else {
+      // Chrome Canary not installed
       actualPort = findFreeDebugPort(instances, port);
-      shouldWaitForUser = true;
       clearStatusLine();
-      waitMessageContent = [
-        `${C.yellow}Chrome path not found.${C.reset} In PowerShell (Admin):`,
-        `${C.dim}1) Start Chrome: --remote-debugging-port=${actualPort} --user-data-dir="${profileLoc.path}"${C.reset}`,
-        `${C.dim}2) netsh interface portproxy add v4tov4 listenport=${actualPort} listenaddress=0.0.0.0 connectport=${actualPort} connectaddress=127.0.0.1${C.reset}`,
-      ].join('\n');
+      printCanaryInstallInstructions();
+      log.info('Install Chrome Canary and try again.');
+      process.exit(1);
     }
 
     // Launch Chrome if needed
-    if (shouldLaunchChrome && chromeFound) {
+    if (shouldLaunchChrome && chromePath) {
       // Check if port proxy is blocking our port and remove it
       if (isPortBlocked(actualPort)) {
         clearStatusLine();
@@ -454,7 +451,7 @@ export async function runJoinMode(port, options = {}) {
         }
       }
 
-      // Kill any existing Chrome with puppeteer-monitor profile to prevent singleton hijacking
+      // Kill any existing Chrome with browsermonitor profile to prevent singleton hijacking
       killPuppeteerMonitorChromes();
 
       clearStatusLine();
@@ -625,14 +622,14 @@ export async function runJoinMode(port, options = {}) {
 
             console.log(`${C.cyan}[2/2]${C.reset} Stopping Chrome...`);
             try {
-              killPuppeteerMonitorChromes(true); // Only kill puppeteer-monitor Chrome, not user's browser!
+              killPuppeteerMonitorChromes(true); // Only kill browsermonitor Chrome, not user's browser!
               console.log(`  ${C.green}✓${C.reset} Chrome stopped`);
             } catch (err) {
               console.log(`  ${C.yellow}!${C.reset} Could not stop Chrome: ${err.message}`);
             }
 
             console.log('');
-            console.log(`${C.green}Fix applied!${C.reset} Please run puppeteer-monitor again.`);
+            console.log(`${C.green}Fix applied!${C.reset} Please run browsermonitor again.`);
             console.log(`${C.dim}Chrome will now bind to 0.0.0.0 correctly (no port proxy needed).${C.reset}`);
             console.log('');
             process.exit(0);

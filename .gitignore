@@ -1,8 +1,4 @@
 node_modules/
-.puppeteer-profile/
-.puppeteer-profile-*/
-.puppeteer-chrome.pid
-puppeteer-console.log
-puppeteer-network.log
-puppeteer-network-log/
+.browsermonitor/
+.browsermonitor-profile/
 nul

@@ -41,12 +41,14 @@ export class LogBuffer {
       this.DOM_HTML = paths.domHtml;
       this.SCREENSHOT = paths.screenshot;
     } else {
-      this.CONSOLE_LOG = path.join(outputDir, 'puppeteer-console.log');
-      this.NETWORK_LOG = path.join(outputDir, 'puppeteer-network.log');
-      this.NETWORK_DIR = path.join(outputDir, 'puppeteer-network-log');
-      this.COOKIES_DIR = path.join(outputDir, 'puppeteer-cookies');
-      this.DOM_HTML = path.join(outputDir, 'puppeteer-dom.html');
-      this.SCREENSHOT = path.join(outputDir, 'puppeteer-screenshot.png');
+      // Fallback: use .browsermonitor/.puppeteer/ structure relative to outputDir
+      const bmPuppeteerDir = path.join(outputDir, '.browsermonitor', '.puppeteer');
+      this.CONSOLE_LOG = path.join(bmPuppeteerDir, 'console.log');
+      this.NETWORK_LOG = path.join(bmPuppeteerDir, 'network.log');
+      this.NETWORK_DIR = path.join(bmPuppeteerDir, 'network-log');
+      this.COOKIES_DIR = path.join(bmPuppeteerDir, 'cookies');
+      this.DOM_HTML = path.join(bmPuppeteerDir, 'dom.html');
+      this.SCREENSHOT = path.join(bmPuppeteerDir, 'screenshot.png');
     }
 
     this.consoleBuffer = [];

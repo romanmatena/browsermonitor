@@ -271,19 +271,13 @@ export function findProjectChrome(instances, projectDir) {
   for (const inst of instances) {
     const instProfile = inst.profile.toLowerCase();
 
-    // Match new format: browsermonitor\{projectName}_{hash}
+    // Match format: browsermonitor\{projectName}_{hash}
     if (instProfile.includes('browsermonitor') && instProfile.includes(expectedProfileId)) {
       return { found: true, instance: inst, matchType: 'exact' };
     }
 
-    // Legacy match: old puppeteer-monitor format
-    if (instProfile.includes('puppeteer-monitor') && instProfile.includes(expectedProfileId)) {
-      return { found: true, instance: inst, matchType: 'exact' };
-    }
-
-    // Legacy match: just project name
-    if (instProfile.includes(projectName.toLowerCase()) &&
-        (instProfile.includes('.puppeteer-profile') || instProfile.includes('browsermonitor') || instProfile.includes('puppeteer-monitor'))) {
+    // Match by project name in browsermonitor profile
+    if (instProfile.includes(projectName.toLowerCase()) && instProfile.includes('browsermonitor')) {
       return { found: true, instance: inst, matchType: 'legacy' };
     }
   }
@@ -413,7 +407,7 @@ export function startChromeOnWindows(chromePath, port, profileDir) {
 export function killPuppeteerMonitorChromes(usePowerShell = false) {
   try {
     if (usePowerShell) {
-      const psScript = `$chromes = Get-WmiObject Win32_Process -Filter 'name=''chrome.exe''' | Select-Object ProcessId, CommandLine; $killed = 0; foreach ($chrome in $chromes) { if ($chrome.CommandLine -match 'browsermonitor|puppeteer-monitor') { Stop-Process -Id $chrome.ProcessId -Force -ErrorAction SilentlyContinue; $killed++; break } }; Write-Output $killed`;
+      const psScript = `$chromes = Get-WmiObject Win32_Process -Filter 'name=''chrome.exe''' | Select-Object ProcessId, CommandLine; $killed = 0; foreach ($chrome in $chromes) { if ($chrome.CommandLine -match 'browsermonitor') { Stop-Process -Id $chrome.ProcessId -Force -ErrorAction SilentlyContinue; $killed++; break } }; Write-Output $killed`;
 
       try {
         const result = execFileSync(
@@ -444,7 +438,7 @@ export function killPuppeteerMonitorChromes(usePowerShell = false) {
     for (const line of lines) {
       if (line.includes('CommandLine') && line.includes('ProcessId')) continue;
 
-      if (line.includes('browsermonitor') || line.includes('puppeteer-monitor')) {
+      if (line.includes('browsermonitor')) {
         const pidMatch = line.match(/(\d+)\s*$/);
         if (pidMatch) {
           puppeteerMonitorPids.push(pidMatch[1]);
@@ -504,6 +498,6 @@ export function launchChromeFromWSL(chromePath, port) {
   const distroName = getWslDistroName();
   const wslPath = process.cwd();
   const winPath = wslPath.replace(/\//g, '\\');
-  const profileDir = `\\\\wsl$\\${distroName}${winPath}\\.puppeteer-profile`;
+  const profileDir = `\\\\wsl$\\${distroName}${winPath}\\.browsermonitor-profile`;
   return startChromeOnWindows(chromePath, port, profileDir);
 }

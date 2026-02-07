@@ -1,7 +1,7 @@
 /**
- * WSL utilities for puppeteer-monitor.
+ * WSL utilities for browsermonitor.
  *
- * This module provides all functionality needed for running puppeteer-monitor
+ * This module provides all functionality needed for running browsermonitor
  * from WSL2 and connecting to Chrome on Windows.
  */
 

@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-# Publish puppeteer-monitor to npm + GitHub
+# Publish browsermonitor to npm + GitHub
 # Usage: ./publish.sh [patch|minor|major]
 #   Default: patch
 
 BUMP="${1:-patch}"
-TOKEN_FILE="$HOME/.npm-token-puppeteer-monitor"
+TOKEN_FILE="$HOME/.npm-token-browsermonitor"
 
 # Check for npm token
 if [ ! -f "$TOKEN_FILE" ]; then
@@ -42,6 +42,6 @@ npm publish --access public
 npm config delete //registry.npmjs.org/:_authToken
 
 echo ""
-echo "Published puppeteer-monitor@$NEW_VERSION"
-echo "  npm: https://www.npmjs.com/package/puppeteer-monitor"
-echo "  GitHub: https://github.com/romanmatena/puppeteer-monitor"
+echo "Published browsermonitor@$NEW_VERSION"
+echo "  npm: https://www.npmjs.com/package/browsermonitor"
+echo "  GitHub: https://github.com/romanmatena/browsermonitor"

@@ -1,5 +1,5 @@
 /**
- * Puppeteer Monitor - monitors browser console and network on dev server
+ * Browser Monitor - monitors browser console and network on dev server
  *
  * Modes:
  * - Default (lazy): Stores logs in memory, writes to file on demand
@@ -11,11 +11,11 @@
  * - Realtime (--realtime): Writes every event immediately to files
  *
  * Features:
- * - Console output -> puppeteer-console.log (filtered, with HMR detection)
- * - Network requests -> puppeteer-network-log/ directory
- *   - puppeteer-network.log - main log with request IDs
+ * - Console output -> .browsermonitor/.puppeteer/console.log (filtered, with HMR detection)
+ * - Network requests -> .browsermonitor/.puppeteer/network-log/ directory
+ *   - .browsermonitor/.puppeteer/network.log - main log with request IDs
  *   - {id}.json - detailed request/response for each request
- * - DOM dump on /dump or key 'd' -> puppeteer-dom.html (current JS-modified HTML structure)
+ * - DOM dump on /dump or key 'd' -> .browsermonitor/.puppeteer/dom.html (current JS-modified HTML structure)
  * - Console clear detection (clears buffer/log file)
  * - GUI browser mode (user can interact)
  * - HTTP API for LLM integration (default port 60001)

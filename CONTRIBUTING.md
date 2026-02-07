@@ -1,4 +1,4 @@
-# Contributing to Puppeteer Monitor
+# Contributing to Browser Monitor
 
 Thank you for your interest in contributing.
 
@@ -14,12 +14,12 @@ Thank you for your interest in contributing.
 ## Development Setup
 
 ```bash
-git clone https://github.com/romanmatena/puppeteer-monitor.git
-cd puppeteer-monitor
+git clone https://github.com/romanmatena/browsermonitor.git
+cd browsermonitor
 pnpm install
 ```
 
-Run the tool: `pnpm exec puppeteer-monitor --open` or `node src/cli.mjs --open`
+Run the tool: `node src/cli.mjs --open` or link globally: `npm link && browsermonitor --open`
 
 ## Code Style
 
@@ -35,4 +35,4 @@ Run the tool: `pnpm exec puppeteer-monitor --open` or `node src/cli.mjs --open`
 
 ## Questions
 
-Open an [Issue](https://github.com/romanmatena/puppeteer-monitor/issues) for questions or discussions.
+Open an [Issue](https://github.com/romanmatena/browsermonitor/issues) for questions or discussions.
