@@ -132,7 +132,7 @@ For **join mode** (attach to existing Chrome): start Chrome manually with `--rem
 
 Each project gets its own Chrome profile:
 - **WSL:** `%LOCALAPPDATA%\browsermonitor\{project}_{hash}` (Windows path)
-- **Native:** `.browsermonitor-profile/` in project dir
+- **Native:** `.browsermonitor/.chrome-profile/` in project dir
 
 Separate cookies and logins per project; won't interfere with your regular Chrome.
 
@@ -172,8 +172,8 @@ When browsermonitor runs in a project directory, it creates:
 │       ├── cookies/           # Per-domain cookie JSONs
 │       ├── dom.html
 │       └── screenshot.png
-└── .browsermonitor-profile/   # Chrome profile (native) or
-                               # %LOCALAPPDATA%\browsermonitor\ (WSL)
+│   └── .chrome-profile/       # Chrome profile (native) or
+│                              # %LOCALAPPDATA%\browsermonitor\ (WSL)
 ```
 
 ## Keyboard Controls (open/join mode)
@@ -208,8 +208,8 @@ Use `curl` to communicate with the HTTP API over REST. Default URL: `http://loca
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /dump` | Dump logs, DOM, cookies, screenshot to files; returns output paths |
-| `GET /status` | Current status, monitored URLs, stats, output file paths |
+| `GET /dump` | Dump logs, DOM, cookies, screenshot to files; returns output file paths |
+| `GET /status` | Current state: status, mode, monitored URLs, collecting flag, stats |
 | `GET /stop` | Pause collecting (console/network) |
 | `GET /start` | Resume collecting |
 | `GET /clear` | Clear in-memory buffers |
@@ -341,7 +341,7 @@ Second launch: chrome.exe --remote-debugging-port=9223 --user-data-dir=Y
 
 **Consequence:** If user has Chrome open for regular browsing, launching a new Chrome with debug flags does nothing - the existing Chrome (without debugging) handles it.
 
-**Detection method (used in monitor.mjs):**
+**Detection method (used in open-mode.mjs):**
 ```bash
 # From WSL, query Windows WMI for Chrome processes:
 wmic.exe process where "name='chrome.exe'" get processid,commandline
@@ -553,6 +553,7 @@ netstat -ano | findstr "9222.*LISTEN"
 
 - **Entry point:** [cli.mjs](src/cli.mjs) – argument parsing, mode dispatch
 - **Settings:** [settings.mjs](src/settings.mjs) – project paths, config loading
-- **Modes:** [monitor.mjs](src/monitor.mjs) re-exports; implementations in [monitor/join-mode.mjs](src/monitor/join-mode.mjs), [monitor/open-mode.mjs](src/monitor/open-mode.mjs), [monitor/interactive-mode.mjs](src/monitor/interactive-mode.mjs)
+- **Modes:** [monitor/open-mode.mjs](src/monitor/open-mode.mjs), [monitor/join-mode.mjs](src/monitor/join-mode.mjs)
+- **Shared modules:** [monitor/shared/](src/monitor/shared/) – cleanup, keyboard, HTTP state, tab switching, help, monitoring wrapper, user page filter
 - **WSL:** [os/wsl/index.mjs](src/os/wsl/index.mjs) – `runWslDiagnostics()`, `scanChromeInstances()`, Chrome launch and port proxy helpers
 - **Chrome launch (WSL):** [os/wsl/chrome.mjs](src/os/wsl/chrome.mjs) – `startChromeOnWindows()`, port proxy, profile path
