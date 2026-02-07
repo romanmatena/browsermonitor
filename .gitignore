@@ -1,4 +1,5 @@
 node_modules/
 .browsermonitor/
 .browsermonitor-profile/
+.puppeteer-profile/
 nul
