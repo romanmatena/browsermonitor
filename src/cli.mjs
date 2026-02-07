@@ -132,8 +132,8 @@ Config (.browsermonitor/settings.json):
 
   // 5. Show API/output info (now httpPort is known)
   printApiHelpTable({
-    url: url,
-    port: httpPort,
+    url: config.defaultUrl,
+    port: config.httpPort,
     showApi: true,
     showInteractive: false,
     showOutputFiles: true,
@@ -151,8 +151,8 @@ Config (.browsermonitor/settings.json):
     getAllTabs: async () => [],
   };
   const sharedHttpServer = createHttpServer({
-    port: httpPort,
-    defaultPort: httpPort,
+    port: config.httpPort,
+    defaultPort: config.httpPort,
     getState: () => sharedHttpState,
   });
 
@@ -162,7 +162,7 @@ Config (.browsermonitor/settings.json):
     realtime: realtimeMode,
     ignorePatterns: config.ignorePatterns,
     hardTimeout,
-    httpPort,
+    httpPort: config.httpPort,
     joinPort,
     sharedHttpState,
     sharedHttpServer,
