@@ -14,7 +14,7 @@ import { printBulletBox, printInteractiveMenuBlock, printModeHeading } from '../
 import { createTable, printTable } from '../templates/table-helper.mjs';
 import { buildWaitForChromeContent } from '../templates/wait-for-chrome.mjs';
 import { writeStatusLine, clearStatusLine } from '../utils/status-line.mjs';
-import { getPaths, ensureDirectories } from '../settings.mjs';
+import { getPaths, ensureDirectories, loadSettings, saveSettings, isInitialized, DEFAULT_SETTINGS } from '../settings.mjs';
 
 /**
  * Collect Chrome instances with remote debugging (for interactive "join").
@@ -94,6 +94,48 @@ export function askProjectDirForOpen(currentCwd) {
 }
 
 /**
+ * Ask user for default URL (single line, stdin.once so stdin stays open).
+ */
+function askDefaultUrl(defaultValue) {
+  return new Promise((resolve) => {
+    const wasRaw = process.stdin.isTTY && process.stdin.isRaw;
+    if (wasRaw) process.stdin.setRawMode(false);
+
+    process.stdout.write(`  ${C.cyan}Default URL${C.reset} [${C.dim}${defaultValue}${C.reset}]: `);
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    process.stdin.once('data', (chunk) => {
+      process.stdin.pause();
+      if (wasRaw && process.stdin.isTTY) process.stdin.setRawMode(true);
+      const trimmed = chunk.toString().trim().split('\n')[0].trim();
+      resolve(trimmed || defaultValue);
+    });
+  });
+}
+
+/**
+ * Ask user for HTTP API port (single line, stdin.once so stdin stays open).
+ */
+function askHttpPort(defaultPort) {
+  return new Promise((resolve) => {
+    const wasRaw = process.stdin.isTTY && process.stdin.isRaw;
+    if (wasRaw) process.stdin.setRawMode(false);
+
+    process.stdout.write(`  ${C.cyan}HTTP API port${C.reset} [${C.dim}${defaultPort}${C.reset}]: `);
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    process.stdin.once('data', (chunk) => {
+      process.stdin.pause();
+      if (wasRaw && process.stdin.isTTY) process.stdin.setRawMode(true);
+      const trimmed = chunk.toString().trim().split('\n')[0].trim();
+      if (trimmed === '') { resolve(defaultPort); return; }
+      const num = parseInt(trimmed, 10);
+      resolve(!Number.isNaN(num) && num >= 1 && num <= 65535 ? num : defaultPort);
+    });
+  });
+}
+
+/**
  * Let user pick one Chrome instance from list.
  * @param {Array<{ port: number, label: string }>} items
  * @returns {Promise<number|null>}
@@ -139,7 +181,7 @@ export function askUserToSelectChromeInstance(items) {
  * @param {{ runOpenMode: Function, runJoinMode: Function }} deps
  */
 export async function runInteractiveMode(options, deps) {
-  const {
+  let {
     defaultUrl = 'https://localhost:4000/',
     realtime = false,
     headless = false,
@@ -149,13 +191,33 @@ export async function runInteractiveMode(options, deps) {
     paths: optionsPaths = null,
     ignorePatterns = [],
     httpPort = 60001,
+    config = {},
   } = options;
 
   const { runOpenMode, runJoinMode } = deps;
 
-  // Project root and paths already determined by cli.mjs
-  const outputDir = optionsOutputDir || process.cwd();
-  const paths = optionsPaths || getPaths(outputDir);
+  let outputDir = optionsOutputDir || process.cwd();
+  let paths = optionsPaths || getPaths(outputDir);
+
+  // If not initialized, ask for project root, URL, port → save settings → run init
+  if (!isInitialized(outputDir) && process.stdin.isTTY) {
+    outputDir = await askProjectDirForOpen(outputDir);
+    paths = getPaths(outputDir);
+    ensureDirectories(outputDir);
+
+    defaultUrl = await askDefaultUrl(config.defaultUrl || defaultUrl);
+    httpPort = await askHttpPort(config.httpPort || httpPort);
+
+    saveSettings(outputDir, {
+      ...DEFAULT_SETTINGS,
+      defaultUrl,
+      httpPort,
+    });
+
+    // Agent files update (needs settings.json to exist first)
+    const { runInit } = await import('../init.mjs');
+    await runInit(outputDir, { askForUrl: false, updateAgentFiles: true });
+  }
 
   const profileLoc = getChromeProfileLocation(outputDir);
   const cmdStderrLines = getLastCmdStderrAndClear();

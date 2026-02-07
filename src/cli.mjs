@@ -26,10 +26,8 @@ import { printAppIntro } from './intro.mjs';
 import { createHttpServer } from './http-server.mjs';
 import { printApiHelpTable } from './templates/api-help.mjs';
 import { printCliCommandsTable } from './templates/cli-commands.mjs';
-import { askHttpPort } from './utils/ask.mjs';
-import { loadSettings, isInitialized, getPaths, ensureDirectories } from './settings.mjs';
+import { loadSettings, getPaths, ensureDirectories } from './settings.mjs';
 import { runInit } from './init.mjs';
-import { askProjectDirForOpen } from './monitor/interactive-mode.mjs';
 
 // Parse arguments
 const args = process.argv.slice(2);
@@ -105,36 +103,18 @@ if (joinArg) {
   }
 }
 
-const isInteractive = !openMode && joinPort === null;
 
 (async () => {
   // 1. Intro
   printAppIntro();
 
-  // 2. Determine project root and init if needed
-  const cwd = process.cwd();
-  const alreadyInitialized = isInitialized(cwd);
-  let projectRoot;
-
-  if (alreadyInitialized) {
-    // Already initialized → use cwd, no questions
-    projectRoot = cwd;
-  } else if (isInteractive && process.stdin.isTTY) {
-    // First run, interactive → ask for project root, then init
-    projectRoot = await askProjectDirForOpen(cwd);
-    await runInit(projectRoot, { askForUrl: true, updateAgentFiles: true });
-  } else {
-    // First run, non-interactive (--open/--join) → use cwd, init silently
-    projectRoot = cwd;
-    await runInit(projectRoot, { askForUrl: false, updateAgentFiles: true });
-  }
+  // 2. Project root = cwd, load existing settings (may be empty/missing)
+  const projectRoot = process.cwd();
   ensureDirectories(projectRoot);
-
-  // 4. Load config
   const config = loadSettings(projectRoot);
   const paths = getPaths(projectRoot);
 
-  // CLI args override settings.json
+  // 3. CLI args override settings.json
   const realtimeMode = args.includes('--realtime') || config.realtime;
   const headlessCli = args.includes('--headless');
   const timeoutArg = args.find((a) => a.startsWith('--timeout='));
@@ -148,7 +128,6 @@ const isInteractive = !openMode && joinPort === null;
   const headless = headlessCli || config.headless || false;
   const ignorePatterns = config.ignorePatterns || [];
 
-  const DEFAULT_HTTP_PORT = config.httpPort || 60001;
   const portArg = args.find((a) => a === '--port' || a.startsWith('--port='));
   let httpPortFromArgs = null;
   if (portArg) {
@@ -156,12 +135,10 @@ const isInteractive = !openMode && joinPort === null;
     const num = parseInt(val, 10);
     if (!Number.isNaN(num) && num >= 1 && num <= 65535) httpPortFromArgs = num;
   }
+  const httpPort = httpPortFromArgs ?? config.httpPort ?? 60001;
 
-  // 5. Show API/output info
-  printApiHelpTable({ port: DEFAULT_HTTP_PORT, showApi: true, showInteractive: false, showOutputFiles: true, noLeadingNewline: true });
-
-  // Use config port directly (only ask on first run via init)
-  const httpPort = httpPortFromArgs ?? DEFAULT_HTTP_PORT;
+  // 4. Show API/output info
+  printApiHelpTable({ port: httpPort, showApi: true, showInteractive: false, showOutputFiles: true, noLeadingNewline: true });
 
   const sharedHttpState = {
     mode: 'interactive',
@@ -174,7 +151,7 @@ const isInteractive = !openMode && joinPort === null;
   };
   const sharedHttpServer = createHttpServer({
     port: httpPort,
-    defaultPort: DEFAULT_HTTP_PORT,
+    defaultPort: httpPort,
     getState: () => sharedHttpState,
   });
 
@@ -189,7 +166,7 @@ const isInteractive = !openMode && joinPort === null;
     sharedHttpServer,
   };
 
-  // 6. Dispatch to mode
+  // 5. Dispatch to mode
   if (openMode) {
     console.log(`  [CLI] Open mode → ${url}`);
     await runOpenMode(url, {
@@ -209,6 +186,7 @@ const isInteractive = !openMode && joinPort === null;
       defaultUrl: url,
       headless,
       navigationTimeout,
+      config,
     });
   }
 })();

@@ -1,5 +1,11 @@
 /**
- * browsermonitor init – first-run setup and agent file updates.
+ * browsermonitor init – agent file updates and settings creation.
+ *
+ * When called from interactive mode (askForUrl: false), settings.json
+ * already exists (interactive mode saved it). Only updates agent files.
+ *
+ * When called from `browsermonitor init` subcommand (askForUrl: true),
+ * creates settings.json if missing (prompts for URL).
  */
 
 import fs from 'fs';
@@ -9,6 +15,7 @@ import {
   DEFAULT_SETTINGS,
   ensureDirectories,
   getPaths,
+  loadSettings,
   saveSettings,
 } from './settings.mjs';
 import { C } from './utils/colors.mjs';
@@ -77,21 +84,21 @@ function askDefaultUrl(defaultValue) {
 export async function runInit(projectRoot, options = {}) {
   const { askForUrl = true, updateAgentFiles = true } = options;
 
-  // Create directory structure
   ensureDirectories(projectRoot);
 
-  // Settings
+  // Create settings.json if missing (only when called from `browsermonitor init` subcommand)
   const { settingsFile } = getPaths(projectRoot);
-  let defaultUrl = DEFAULT_SETTINGS.defaultUrl;
-
   if (!fs.existsSync(settingsFile)) {
+    let defaultUrl = DEFAULT_SETTINGS.defaultUrl;
     if (askForUrl && process.stdin.isTTY) {
       defaultUrl = await askDefaultUrl(defaultUrl);
     }
     saveSettings(projectRoot, { ...DEFAULT_SETTINGS, defaultUrl });
   }
 
-  // Update agent files silently
+  const settings = loadSettings(projectRoot);
+
+  // Update agent files
   const agentUpdates = [];
   if (updateAgentFiles && fs.existsSync(TEMPLATE_PATH)) {
     const templateContent = fs.readFileSync(TEMPLATE_PATH, 'utf8');
@@ -114,7 +121,7 @@ export async function runInit(projectRoot, options = {}) {
   // Display results
   const lines = [
     `${C.cyan}Project:${C.reset} ${projectRoot}`,
-    `${C.green}Created${C.reset} .browsermonitor/ → ${C.cyan}${defaultUrl}${C.reset}`,
+    `${C.green}Created${C.reset} .browsermonitor/ → ${C.cyan}${settings.defaultUrl}${C.reset}`,
   ];
   if (agentUpdates.length > 0) {
     lines.push(`${C.green}Agent docs:${C.reset} ${agentUpdates.join(', ')}`);

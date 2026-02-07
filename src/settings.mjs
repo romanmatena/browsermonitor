@@ -49,19 +49,13 @@ export function getPaths(projectRoot) {
 }
 
 /**
- * Check if settings.json exists and has required fields.
+ * Check if settings.json exists (first-run detection).
  * @param {string} projectRoot
  * @returns {boolean}
  */
 export function isInitialized(projectRoot) {
   const { settingsFile } = getPaths(projectRoot);
-  try {
-    if (!fs.existsSync(settingsFile)) return false;
-    const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
-    return !!(settings.defaultUrl && settings.httpPort);
-  } catch {
-    return false;
-  }
+  return fs.existsSync(settingsFile);
 }
 
 /**
