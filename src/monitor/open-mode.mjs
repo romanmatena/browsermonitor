@@ -841,14 +841,21 @@ export async function runOpenMode(url, options = {}) {
     }
     logBuffer.printNetworkSeparator('NAVIGATION STARTED');
 
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: navigationTimeout,
-    });
-
-    clearStatusLine();
-    logBuffer.printConsoleSeparator('PAGE LOADED - Listening for console output');
-    logBuffer.printNetworkSeparator('PAGE LOADED - Listening for network requests');
+    try {
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: navigationTimeout,
+      });
+      clearStatusLine();
+      logBuffer.printConsoleSeparator('PAGE LOADED - Listening for console output');
+      logBuffer.printNetworkSeparator('PAGE LOADED - Listening for network requests');
+    } catch (navErr) {
+      clearStatusLine();
+      log.warn(`Navigation failed: ${navErr.message}`);
+      log.info('Browser is still open. You can navigate manually or retry.');
+      logBuffer.logConsole(`[Monitor] Navigation to ${url} failed: ${navErr.message}`);
+      logBuffer.printConsoleSeparator('NAVIGATION FAILED - Listening for console output');
+    }
 
     // Close other tabs only after our page is open (so we never close the tab we need)
     const allPages = await browser.pages();
