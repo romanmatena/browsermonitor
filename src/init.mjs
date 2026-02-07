@@ -72,10 +72,13 @@ export async function runInit(projectRoot, options = {}) {
 
   const settings = loadSettings(projectRoot);
 
-  // Update agent files
+  // Update agent files (render template with settings values)
   const agentUpdates = [];
   if (updateAgentFiles && fs.existsSync(TEMPLATE_PATH)) {
-    const templateContent = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+    let templateContent = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+    templateContent = templateContent
+      .replace(/\{\{DEFAULT_URL\}\}/g, settings.defaultUrl || 'https://localhost:4000/')
+      .replace(/\{\{HTTP_PORT\}\}/g, String(settings.httpPort || 60001));
     for (const docFile of ['CLAUDE.md', 'AGENTS.md', 'memory.md']) {
       const action = replaceOrAppendSection(projectRoot, docFile, templateContent);
       if (action) agentUpdates.push(`${action} ${C.cyan}${docFile}${C.reset}`);
