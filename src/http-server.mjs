@@ -17,6 +17,8 @@ import { API_ENDPOINTS } from './templates/api-help.mjs';
 
 /** Default timeout for Puppeteer operations (ms). */
 const PUPPETEER_CALL_TIMEOUT_MS = 30_000;
+/** Max request body size (bytes) for POST /puppeteer. */
+const MAX_BODY_BYTES = 5 * 1024 * 1024;
 
 /** Allowed page.* methods for POST /puppeteer (no evaluate by default for safety). */
 const PAGE_WHITELIST = new Set([
@@ -28,16 +30,42 @@ const PAGE_WHITELIST = new Set([
 ]);
 
 /**
- * Read request body as UTF-8 string.
+ * Read request body as UTF-8 string with size limit.
  * @param {http.IncomingMessage} req
+ * @param {number} [limitBytes=MAX_BODY_BYTES]
  * @returns {Promise<string>}
  */
-function readBody(req) {
+function readBody(req, limitBytes = MAX_BODY_BYTES) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-    req.on('error', reject);
+    let size = 0;
+    let done = false;
+
+    const finishError = (err) => {
+      if (done) return;
+      done = true;
+      reject(err);
+    };
+
+    const finishOk = (text) => {
+      if (done) return;
+      done = true;
+      resolve(text);
+    };
+
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > limitBytes) {
+        const err = new Error(`Request body too large (max ${limitBytes} bytes)`);
+        err.code = 'BODY_TOO_LARGE';
+        try { req.destroy(err); } catch {}
+        finishError(err);
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => finishOk(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', finishError);
   });
 }
 
@@ -361,10 +389,12 @@ export function createHttpServer(options) {
         const raw = await readBody(req);
         body = raw ? JSON.parse(raw) : {};
       } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
+        const isTooLarge = e?.code === 'BODY_TOO_LARGE';
+        const status = isTooLarge ? 413 : 400;
+        res.writeHead(status, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           success: false,
-          error: 'Invalid JSON body',
+          error: isTooLarge ? 'Request body too large (max 5MB)' : 'Invalid JSON body',
           timestamp: getFullTimestamp(),
         }, null, 2));
         return;
