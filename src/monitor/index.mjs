@@ -5,7 +5,7 @@
  *
  * - page-monitoring.mjs    – shared console/network listeners for a page
  * - tab-selection.mjs      – askUserToSelectPage, ensureKeypressEvents
- * - interactive-mode.mjs   – runInteractiveMode(options, deps), getChromeInstances, askProjectDirForOpen
+ * - interactive-mode.mjs   – runInteractiveMode(options, deps), getChromeInstances
  */
 
 export { setupPageMonitoring } from './page-monitoring.mjs';
@@ -13,6 +13,5 @@ export { askUserToSelectPage, ensureKeypressEvents } from './tab-selection.mjs';
 export {
   runInteractiveMode,
   getChromeInstances,
-  askProjectDirForOpen,
   askUserToSelectChromeInstance,
 } from './interactive-mode.mjs';

@@ -4,8 +4,6 @@
  * to avoid circular dependency with monitor.mjs.
  */
 
-import fs from 'fs';
-import path from 'path';
 import readline from 'readline';
 import { C, log } from '../utils/colors.mjs';
 import { getChromeProfileLocation } from '../utils/chrome-profile-path.mjs';
@@ -45,52 +43,6 @@ export async function getChromeInstances() {
   } finally {
     clearStatusLine();
   }
-}
-
-/**
- * Ask user which directory to use as project root when opening Chrome (key 'o').
- * Reads one line via stdin.once('data') so that stdin is NOT closed (readline.close()
- * would destroy stdin and the process would exit before the menu keypress listener runs).
- * @param {string} currentCwd
- * @returns {Promise<string>} Resolved absolute path to use as outputDir
- */
-export function askProjectDirForOpen(currentCwd) {
-  return new Promise((resolve) => {
-    const wasRaw = process.stdin.isTTY && process.stdin.isRaw;
-    if (wasRaw) process.stdin.setRawMode(false);
-
-    console.log('');
-    process.stdout.write(`  ${C.cyan}Project root${C.reset}: ${C.brightCyan}${currentCwd}${C.reset} (${C.green}Enter${C.reset} = use, or type path): `);
-
-    const onData = (chunk) => {
-      process.stdin.removeListener('data', onData);
-      process.stdin.pause();
-      if (wasRaw && process.stdin.isTTY) process.stdin.setRawMode(true);
-
-      const trimmed = (chunk.toString().trim().split('\n')[0] || '').trim();
-      if (trimmed === '') {
-        resolve(currentCwd);
-        return;
-      }
-      const resolved = path.resolve(currentCwd, trimmed);
-      try {
-        const stat = fs.statSync(resolved);
-        if (!stat.isDirectory()) {
-          log.warn(`Not a directory: ${resolved}, using current dir.`);
-          resolve(currentCwd);
-          return;
-        }
-      } catch {
-        log.warn(`Path not found: ${resolved}, using current dir.`);
-        resolve(currentCwd);
-        return;
-      }
-      resolve(resolved);
-    };
-    process.stdin.resume();
-    process.stdin.setEncoding('utf8');
-    process.stdin.once('data', onData);
-  });
 }
 
 /**
