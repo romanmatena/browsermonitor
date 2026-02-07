@@ -1,11 +1,5 @@
 /**
- * browsermonitor init – agent file updates and settings creation.
- *
- * When called from interactive mode (askForUrl: false), settings.json
- * already exists (interactive mode saved it). Only updates agent files.
- *
- * When called from `browsermonitor init` subcommand (askForUrl: true),
- * creates settings.json if missing (prompts for URL).
+ * browsermonitor init – creates settings.json with defaults, updates agent files.
  */
 
 import fs from 'fs';
@@ -20,7 +14,6 @@ import {
 } from './settings.mjs';
 import { C } from './utils/colors.mjs';
 import { printBulletBox } from './templates/section-heading.mjs';
-import { askDefaultUrl } from './utils/ask.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -67,18 +60,14 @@ function replaceOrAppendSection(hostDir, docFilename, templateContent) {
  * Run browsermonitor initialization.
  */
 export async function runInit(projectRoot, options = {}) {
-  const { askForUrl = true, updateAgentFiles = true } = options;
+  const { updateAgentFiles = true } = options;
 
   ensureDirectories(projectRoot);
 
-  // Create settings.json if missing (only when called from `browsermonitor init` subcommand)
+  // Create settings.json with defaults if missing
   const { settingsFile } = getPaths(projectRoot);
   if (!fs.existsSync(settingsFile)) {
-    let defaultUrl = DEFAULT_SETTINGS.defaultUrl;
-    if (askForUrl && process.stdin.isTTY) {
-      defaultUrl = await askDefaultUrl(defaultUrl);
-    }
-    saveSettings(projectRoot, { ...DEFAULT_SETTINGS, defaultUrl });
+    saveSettings(projectRoot, { ...DEFAULT_SETTINGS });
   }
 
   const settings = loadSettings(projectRoot);
@@ -106,8 +95,11 @@ export async function runInit(projectRoot, options = {}) {
   // Display results
   const lines = [
     `${C.cyan}Project:${C.reset} ${projectRoot}`,
-    `${C.green}Created${C.reset} .browsermonitor/ → ${C.cyan}${settings.defaultUrl}${C.reset}`,
+    `${C.green}Created${C.reset} .browsermonitor/`,
   ];
+  if (settings.defaultUrl) {
+    lines[1] += ` → ${C.cyan}${settings.defaultUrl}${C.reset}`;
+  }
   if (agentUpdates.length > 0) {
     lines.push(`${C.green}Agent docs:${C.reset} ${agentUpdates.join(', ')}`);
   }

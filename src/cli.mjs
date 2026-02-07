@@ -34,7 +34,7 @@ const args = process.argv.slice(2);
 
 // Handle `browsermonitor init` subcommand
 if (args[0] === 'init') {
-  await runInit(process.cwd(), { askForUrl: true, updateAgentFiles: true });
+  await runInit(process.cwd());
   process.exit(0);
 }
 

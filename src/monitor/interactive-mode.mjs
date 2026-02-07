@@ -123,7 +123,7 @@ export async function runInteractiveMode(options, deps) {
 
     // Agent files update (needs settings.json to exist first)
     const { runInit } = await import('../init.mjs');
-    await runInit(outputDir, { askForUrl: false, updateAgentFiles: true });
+    await runInit(outputDir);
   }
 
   const profileLoc = getChromeProfileLocation(outputDir);
