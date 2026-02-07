@@ -111,15 +111,22 @@ const isInteractive = !openMode && joinPort === null;
   // 1. Intro
   printAppIntro();
 
-  // 2. Determine project root
-  //    Interactive: ask user. Open/Join: use cwd.
-  const projectRoot = isInteractive && process.stdin.isTTY
-    ? await askProjectDirForOpen(process.cwd())
-    : process.cwd();
+  // 2. Determine project root and init if needed
+  const cwd = process.cwd();
+  const alreadyInitialized = isInitialized(cwd);
+  let projectRoot;
 
-  // 3. Init if needed (create .browsermonitor/, settings.json)
-  if (!isInitialized(projectRoot)) {
-    await runInit(projectRoot, { askForUrl: process.stdin.isTTY, updateAgentFiles: true });
+  if (alreadyInitialized) {
+    // Already initialized → use cwd, no questions
+    projectRoot = cwd;
+  } else if (isInteractive && process.stdin.isTTY) {
+    // First run, interactive → ask for project root, then init
+    projectRoot = await askProjectDirForOpen(cwd);
+    await runInit(projectRoot, { askForUrl: true, updateAgentFiles: true });
+  } else {
+    // First run, non-interactive (--open/--join) → use cwd, init silently
+    projectRoot = cwd;
+    await runInit(projectRoot, { askForUrl: false, updateAgentFiles: true });
   }
   ensureDirectories(projectRoot);
 
@@ -153,8 +160,8 @@ const isInteractive = !openMode && joinPort === null;
   // 5. Show API/output info
   printApiHelpTable({ port: DEFAULT_HTTP_PORT, showApi: true, showInteractive: false, showOutputFiles: true, noLeadingNewline: true });
 
-  const httpPort =
-    httpPortFromArgs ?? (process.stdin.isTTY ? await askHttpPort(DEFAULT_HTTP_PORT) : DEFAULT_HTTP_PORT);
+  // Use config port directly (only ask on first run via init)
+  const httpPort = httpPortFromArgs ?? DEFAULT_HTTP_PORT;
 
   const sharedHttpState = {
     mode: 'interactive',
